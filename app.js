@@ -1,5 +1,4 @@
 import express from "express";
-import morgan from "morgan";
 
 const app = express();
 const port = 3000;
@@ -7,7 +6,6 @@ const port = 3000;
 // Middleware
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
 
 // View Engine
 app.set("view engine", "ejs");
