@@ -1,12 +1,1 @@
-[
-  {
-    "nama": "Farden",
-    "noHp": "089123123213",
-    "email": "Farden@gmail.com"
-  },
-  {
-    "nama": "Ramzy",
-    "noHp": "089123123234",
-    "email": "Ramzy@gmail.com"
-  }
-]
+[{"nama":"Farden","noHp":"089123123213","email":"Farden@gmail.com"},{"nama":"Ramzy","noHp":"089123123234","email":"Ramzy@gmail.com"},{"nama":"asd","noHp":"asd","email":"fardenramzy97@gmail.com"}]

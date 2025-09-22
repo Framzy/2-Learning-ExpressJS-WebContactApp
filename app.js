@@ -1,6 +1,6 @@
 import express from "express";
 import expressEjsLayouts from "express-ejs-layouts";
-import { loadContact, findContact } from "./utils/contacts.js";
+import { loadContact, findContact, addContact } from "./utils/contacts.js";
 
 const app = express();
 const port = 3000;
@@ -13,6 +13,7 @@ app.use(expressEjsLayouts);
 
 // built-in middleware (created by express itself)
 app.use(express.static("public"));
+app.use(express.urlencoded());
 
 // Application level middleware (created by user)
 // app.use((req, res, next) => {
@@ -63,6 +64,28 @@ app.get("/contact", (req, res) => {
   res.render("contact", vocals);
 });
 
+// form add contact before route detail
+app.get("/contact/add", (req, res) => {
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "Form Tambah Data Contact",
+  };
+  res.render("add-contact", vocals);
+});
+
+// proses add contact
+app.post("/contact", (req, res) => {
+  const contact = {
+    nama: req.body.nama,
+    noHp: req.body.noHp,
+    email: req.body.email,
+  };
+
+  addContact(contact);
+  res.redirect("/contact");
+});
+
+// detail contact page by name
 app.get("/contact/:nama", (req, res) => {
   const contact = findContact(req.params.nama);
 

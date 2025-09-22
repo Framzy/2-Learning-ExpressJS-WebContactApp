@@ -9,12 +9,14 @@ const dataPath = "./data/contacts.json";
 if (!fs.existsSync(dataPath)) {
   fs.writeFileSync(dataPath, "[]", "utf-8");
 }
+
 // get all contacts
 const loadContact = () => {
   const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
   const contacts = JSON.parse(fileBuffer);
   return contacts;
 };
+
 // find contact
 const findContact = (nama) => {
   const contacts = loadContact();
@@ -22,7 +24,19 @@ const findContact = (nama) => {
   return contact;
 };
 
-export { loadContact, findContact };
+// menuliskan / menimpa file contacts.json
+const saveContacts = (contacts) => {
+  fs.writeFileSync("data/contacts.json", JSON.stringify(contacts));
+};
+
+// menambah data contact
+const addContact = (contact) => {
+  const contacts = loadContact();
+  contacts.push(contact);
+  saveContacts(contacts);
+};
+
+export { loadContact, findContact, addContact };
 
 // const saveContact = (nama, email, noHp) => {
 //   const contact = { nama, email, noHp };
