@@ -5,6 +5,8 @@ import {
   findContact,
   addContact,
   checkDuplicate,
+  deleteContact,
+  updateContact,
 } from "./utils/contacts.js";
 import { body, check, validationResult } from "express-validator";
 import session from "express-session";
@@ -81,7 +83,7 @@ app.get("/contact", (req, res) => {
   res.render("contact", vocals);
 });
 
-// form add contact before route detail
+// form add contact before route detail because get method
 app.get("/contact/add", (req, res) => {
   const vocals = {
     layout: "layouts/main-layout",
@@ -101,8 +103,8 @@ app.post(
       }
       return true;
     }),
-    check("email", "Email Tidak Valid !").isEmail(),
     check("noHp", "Nomor Handphone Tidak Valid !").isMobilePhone("id-ID"),
+    check("email", "Email Tidak Valid !").isEmail(),
   ],
   (req, res) => {
     const errors = validationResult(req);
@@ -127,11 +129,68 @@ app.post(
   }
 );
 
+// proses delete contact
+app.get("/contact/delete/:nama", (req, res) => {
+  const contact = findContact(req.params.nama);
+  if (!contact) {
+    res.status(404);
+    res.send("Contact tidak ditemukan");
+  } else {
+    deleteContact(req.params.nama);
+    // flash message
+    req.flash("msg", "Data contact berhasil dihapus !");
+    res.redirect("/contact");
+  }
+});
+
+// form edit contact before route detail because get method
+app.get("/contact/edit/:nama", (req, res) => {
+  const contact = findContact(req.params.nama);
+
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "Form Ubah Data Contact",
+    contact,
+  };
+  res.render("edit-contact", vocals);
+});
+
+// proses edit contact
+app.post(
+  "/contact/update/",
+  [
+    body("nama").custom((value, { req }) => {
+      const duplicate = checkDuplicate(value);
+      if (value !== req.body.oldNama && duplicate) {
+        throw new Error("Contact sudah terdaftar, gunakan nama lain !");
+      }
+      return true;
+    }),
+    check("noHp", "Nomor Handphone Tidak Valid !").isMobilePhone("id-ID"),
+    check("email", "Email Tidak Valid !").isEmail(),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.render("edit-contact", {
+        title: "Form Ubah Data Contact",
+        layout: "layouts/main-layout",
+        errors: errors.array(),
+        contact: req.body,
+      });
+    } else {
+      updateContact(req.body);
+
+      // flash message
+      req.flash("msg", "Data contact berhasil ditambahkan !");
+      res.redirect("/contact");
+    }
+  }
+);
+
 // detail contact page by name
 app.get("/contact/:nama", (req, res) => {
   const contact = findContact(req.params.nama);
-
-  console.log(contact);
 
   const vocals = {
     layout: "layouts/main-layout",
