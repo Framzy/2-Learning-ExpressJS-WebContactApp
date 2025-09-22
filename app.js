@@ -1,19 +1,35 @@
 import express from "express";
 import expressEjsLayouts from "express-ejs-layouts";
-import { loadContact, findContact, addContact } from "./utils/contacts.js";
+import {
+  loadContact,
+  findContact,
+  addContact,
+  checkDuplicate,
+} from "./utils/contacts.js";
+import { body, check, validationResult } from "express-validator";
+import session from "express-session";
+import cookieParser from "cookie-parser";
+import flash from "connect-flash";
 
 const app = express();
 const port = 3000;
 
-// gunakan ejs
-app.set("view engine", "ejs");
+app.set("view engine", "ejs"); // gunakan ejs
+app.use(expressEjsLayouts); // third-party middleware (created by npm package or third-party)
+app.use(express.static("public")); // built-in middleware (created by express itself)
+app.use(express.urlencoded({ extended: true })); // built-in middleware (created by express itself)
 
-// third-party middleware (created by npm package or third-party)
-app.use(expressEjsLayouts);
-
-// built-in middleware (created by express itself)
-app.use(express.static("public"));
-app.use(express.urlencoded());
+// konfigurasi flash third
+app.use(cookieParser("secret"));
+app.use(
+  session({
+    cookie: { maxAge: 6000 },
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+app.use(flash());
 
 // Application level middleware (created by user)
 // app.use((req, res, next) => {
@@ -60,6 +76,7 @@ app.get("/contact", (req, res) => {
     layout: "layouts/main-layout",
     title: "Contact Page",
     contacts,
+    msg: req.flash("msg"),
   };
   res.render("contact", vocals);
 });
@@ -73,17 +90,42 @@ app.get("/contact/add", (req, res) => {
   res.render("add-contact", vocals);
 });
 
-// proses add contact
-app.post("/contact", (req, res) => {
-  const contact = {
-    nama: req.body.nama,
-    noHp: req.body.noHp,
-    email: req.body.email,
-  };
+// proses add contact ( validator is matches with name form )
+app.post(
+  "/contact",
+  [
+    body("nama").custom((value) => {
+      const duplicate = checkDuplicate(value);
+      if (duplicate) {
+        throw new Error("Contact sudah terdaftar, gunakan nama lain !");
+      }
+      return true;
+    }),
+    check("email", "Email Tidak Valid !").isEmail(),
+    check("noHp", "Nomor Handphone Tidak Valid !").isMobilePhone("id-ID"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.render("add-contact", {
+        title: "Form Tambah Data Contact",
+        layout: "layouts/main-layout",
+        errors: errors.array(),
+      });
+    } else {
+      const contact = {
+        nama: req.body.nama,
+        noHp: req.body.noHp,
+        email: req.body.email,
+      };
+      addContact(contact);
 
-  addContact(contact);
-  res.redirect("/contact");
-});
+      // flash message
+      req.flash("msg", "Data contact berhasil ditambahkan !");
+      res.redirect("/contact");
+    }
+  }
+);
 
 // detail contact page by name
 app.get("/contact/:nama", (req, res) => {

@@ -36,7 +36,13 @@ const addContact = (contact) => {
   saveContacts(contacts);
 };
 
-export { loadContact, findContact, addContact };
+// cek duplikat
+const checkDuplicate = (nama) => {
+  const contacts = loadContact();
+  return contacts.find((contact) => contact.nama === nama);
+};
+
+export { loadContact, findContact, addContact, checkDuplicate };
 
 // const saveContact = (nama, email, noHp) => {
 //   const contact = { nama, email, noHp };
