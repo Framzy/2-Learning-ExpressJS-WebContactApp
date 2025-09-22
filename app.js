@@ -1,30 +1,92 @@
 import express from "express";
+import expressEjsLayouts from "express-ejs-layouts";
+import { loadContact, findContact } from "./utils/contacts.js";
 
 const app = express();
 const port = 3000;
 
-// Middleware
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
-
-// View Engine
+// gunakan ejs
 app.set("view engine", "ejs");
 
-// Routes
+// third-party middleware (created by npm package or third-party)
+app.use(expressEjsLayouts);
+
+// built-in middleware (created by express itself)
+app.use(express.static("public"));
+
+// Application level middleware (created by user)
+// app.use((req, res, next) => {
+//   console.log("Time: ", Date.now());
+//   next();
+// });
+
 app.get("/", (req, res) => {
-  res.render("index", { title: "Web Contact App" });
+  const mhs = [
+    {
+      nama: "farden",
+      kelas: "rq",
+    },
+    {
+      nama: "ramzy",
+      kelas: "rq",
+    },
+    {
+      nama: "muharram",
+      kelas: "rq",
+    },
+  ];
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "Home Page",
+    nama: "farden",
+    mhs,
+  };
+  res.render("index", vocals);
 });
 
 app.get("/about", (req, res) => {
-  res.render("about", { title: "About Page" });
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "About Page",
+  };
+  res.render("about", vocals);
 });
 
-app.post("/contact", (req, res) => {
-  const { name, email, message } = req.body;
-  console.log(`Pesan dari ${name} <${email}>: ${message}`);
-  res.render("index", { title: "Web Contact App" });
+app.get("/contact", (req, res) => {
+  const contacts = loadContact();
+
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "Contact Page",
+    contacts,
+  };
+  res.render("contact", vocals);
+});
+
+app.get("/contact/:nama", (req, res) => {
+  const contact = findContact(req.params.nama);
+
+  console.log(contact);
+
+  const vocals = {
+    layout: "layouts/main-layout",
+    title: "Contact Page",
+    contact,
+  };
+  res.render("detail", vocals);
+});
+
+app.get("/product/:id", (req, res) => {
+  res.render("product");
+  res.send(`Product ID : ${req.params.id} <br> 
+    Category : ${req.query.category} `);
+});
+
+app.use("/", (req, res) => {
+  res.status(404);
+  res.send("404");
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Example app listening on port http://localhost:${port}`);
 });
