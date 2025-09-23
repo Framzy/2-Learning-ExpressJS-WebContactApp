@@ -40,25 +40,10 @@ app.use(flash());
 // });
 
 app.get("/", (req, res) => {
-  const mhs = [
-    {
-      nama: "farden",
-      kelas: "rq",
-    },
-    {
-      nama: "ramzy",
-      kelas: "rq",
-    },
-    {
-      nama: "muharram",
-      kelas: "rq",
-    },
-  ];
   const vocals = {
     layout: "layouts/main-layout",
     title: "Home Page",
-    nama: "farden",
-    mhs,
+    nama: "Farden",
   };
   res.render("index", vocals);
 });
